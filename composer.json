@@ -1,0 +1,33 @@
+{
+    "name": "andreas-weber/php-runner",
+    "description": "Library to simplify the implementation of sophisticated interdependently tasks.",
+    "type": "library",
+    "homepage": "https://github.com/andreas-weber/php-runner",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andreas Weber",
+            "email": "code@andreas-weber.me",
+            "role": "lead"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/andreas-weber/php-runner/issues"
+    },
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=5.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.4",
+        "squizlabs/php_codesniffer": "~2.1",
+        "phpmd/phpmd": "~2.1",
+        "sebastian/phpcpd": "~2.0",
+        "phploc/phploc": "~2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "AndreasWeber\\Runner\\": "src/"
+        }
+    }
+}
