@@ -1,6 +1,6 @@
 # andreas-weber/php-runner
 
-Library to simplify the implementation of sophisticated interdependently tasks.
+Library to simplify the implementation of sophisticated interdependent tasks.
 
 ## Requirements
 Check shipped composer.json.

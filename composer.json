@@ -1,6 +1,6 @@
 {
     "name": "andreas-weber/php-runner",
-    "description": "Library to simplify the implementation of sophisticated interdependently tasks.",
+    "description": "Library to simplify the implementation of sophisticated interdependent tasks.",
     "type": "library",
     "homepage": "https://github.com/andreas-weber/php-runner",
     "license": "MIT",
