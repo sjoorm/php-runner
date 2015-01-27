@@ -1,5 +1,7 @@
 # andreas-weber/php-runner
 
+[![Build Status](https://travis-ci.org/andreas-weber/php-runner.svg?branch=master)](https://travis-ci.org/andreas-weber/php-runner)
+
 Library to simplify the implementation of sophisticated interdependent tasks.
 
 ## Requirements
