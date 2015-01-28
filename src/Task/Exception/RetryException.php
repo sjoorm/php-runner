@@ -9,12 +9,11 @@
  * with this source code in the file LICENSE.
  */
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+namespace AndreasWeber\Runner\Task\Exception;
 
-// Define base path
-defined('BASEPATH')
-|| define('BASEPATH', realpath(dirname(__FILE__) . '/../../'));
+use AndreasWeber\Runner\Exception\RuntimeException;
 
-// Autoloader
-require_once BASEPATH . '/vendor/autoload.php';
+class RetryException extends RuntimeException
+{
+
+}

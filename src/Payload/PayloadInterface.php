@@ -9,12 +9,9 @@
  * with this source code in the file LICENSE.
  */
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+namespace AndreasWeber\Runner\Payload;
 
-// Define base path
-defined('BASEPATH')
-|| define('BASEPATH', realpath(dirname(__FILE__) . '/../../'));
+interface PayloadInterface
+{
 
-// Autoloader
-require_once BASEPATH . '/vendor/autoload.php';
+}
