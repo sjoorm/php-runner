@@ -14,9 +14,11 @@
     "support": {
         "issues": "https://github.com/andreas-weber/php-runner/issues"
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "require": {
         "php": ">=5.4",
+        "ext-reflection": "*",
+        "ext-spl": "*",
         "psr/log": "~1.0"
     },
     "require-dev": {

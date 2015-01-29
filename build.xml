@@ -84,7 +84,7 @@
         <antcall target="phpcs-report"/>
         <antcall target="phpmd-report"/>
     </target>
-    
+
     <!-- cleanup -->
     <target name="cleanup">
         <delete dir="${basedir}/build"/>
@@ -171,6 +171,7 @@
             <arg line="--verbose --stderr"/>
             <arg line="--log-junit ${basedir}/build/phpunit/phpunit.xml"/>
             <arg line="--coverage-html ${basedir}/build/coverage"/>
+            <arg line="--coverage-clover='${basedir}/build/coverage/clover.xml'"/>
             <arg line="."/>
         </exec>
     </target>

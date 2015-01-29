@@ -12,16 +12,63 @@
 namespace AndreasWeber\Runner\Task;
 
 use AndreasWeber\Runner\Payload\PayloadInterface;
+use AndreasWeber\Runner\Task\Retries\Retries;
 
 interface TaskInterface
 {
+    /**
+     * Sets the payload.
+     *
+     * @param PayloadInterface $payload
+     *
+     * @return $this
+     */
     public function setPayload(PayloadInterface $payload);
+
+    /**
+     * Gets the payload.
+     *
+     * @return PayloadInterface
+     */
     public function getPayload();
 
-    public function setMaxRetries($retries); // cast internal to retries instance
+    /**
+     * Sets the max allowed retries.
+     *
+     * @param int|Retries $retries
+     *
+     * @return $this
+     */
+    public function setMaxRetries($retries);
+
+    /**
+     * Gets the max allowed retries.
+     *
+     * @return Retries
+     */
     public function getMaxRetries();
 
+    /**
+     * Executes the task.
+     *
+     * @param PayloadInterface $payload
+     *
+     * @return null
+     */
     public function run(PayloadInterface $payload);
 
+    /**
+     * Marks the task as a cleanup task.
+     * Cleanup tasks will always run, even if another previously task has failed.
+     *
+     * @return $this
+     */
     public function markAsCleanupTask();
+
+    /**
+     * Returns boolean true, when task is marked as cleanup task.
+     *
+     * @return bool
+     */
+    public function isCleanupTask();
 }

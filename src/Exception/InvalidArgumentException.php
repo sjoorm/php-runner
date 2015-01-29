@@ -9,9 +9,9 @@
  * with this source code in the file LICENSE.
  */
 
-namespace AndreasWeber\Runner\TaskSet;
+namespace AndreasWeber\Runner\Exception;
 
-class TaskSet
+class InvalidArgumentException extends \LogicException implements RunnerException
 {
 
 }
