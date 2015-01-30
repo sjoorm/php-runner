@@ -32,16 +32,16 @@ abstract class AbstractTask implements TaskInterface
     private $maxRetries;
 
     /**
-     * @var bool Is cleanup task
+     * @var bool Was successfully executed
      */
-    private $cleanupTask;
+    private $successfullyExecuted;
 
     /**
      * __construct()
      */
     public function __construct()
     {
-        $this->cleanupTask = false;
+        $this->successfullyExecuted = false;
     }
 
     /**
@@ -101,26 +101,26 @@ abstract class AbstractTask implements TaskInterface
     }
 
     /**
-     * Marks the task as a "cleanup task".
-     * Cleanup tasks will always run, even if another previously task has failed.
+     * Marks the task as executed.
+     * Marker is triggered by task runner.
      *
      * @return $this
      */
-    public function markAsCleanupTask()
+    public function markAsSuccessfullyExecuted()
     {
-        $this->cleanupTask = true;
+        $this->successfullyExecuted = true;
 
         return $this;
     }
 
     /**
-     * Returns boolean true, when task is marked as cleanup task.
+     * Returns boolean true, when task was executed.
      *
      * @return bool
      */
-    public function isCleanupTask()
+    public function isSuccessfullyExecuted()
     {
-        return $this->cleanupTask;
+        return $this->successfullyExecuted;
     }
 
     /**

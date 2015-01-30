@@ -11,6 +11,7 @@
 
 namespace AndreasWeber\Runner\Task;
 
+use AndreasWeber\Runner\Exception\LogicException;
 use AndreasWeber\Runner\Payload\PayloadInterface;
 use AndreasWeber\Runner\Task\Retries\Retries;
 
@@ -58,17 +59,49 @@ interface TaskInterface
     public function run(PayloadInterface $payload);
 
     /**
-     * Marks the task as a cleanup task.
-     * Cleanup tasks will always run, even if another previously task has failed.
+     * Marks the task as executed.
+     * Marker is triggered by task runner.
      *
      * @return $this
      */
-    public function markAsCleanupTask();
+    public function markAsSuccessfullyExecuted();
 
     /**
-     * Returns boolean true, when task is marked as cleanup task.
+     * Returns boolean true, when task was executed.
      *
      * @return bool
      */
-    public function isCleanupTask();
+    public function isSuccessfullyExecuted();
+
+    /**
+     * Run one or more precondition checks, before a task is executed.
+     * If return value is boolean false, execution of task will be skipped.
+     *
+     * @return bool
+     */
+    public function unless();
+
+    /**
+     * Sets up the task, for example, open a network connection.
+     * This method is called before the task is executed.
+     *
+     * @return null
+     */
+    public function setUp();
+
+    /**
+     * Tear down the task, for example, close a network connection.
+     * This method is called after the task was executed.
+     *
+     * @return null
+     */
+    public function tearDown();
+
+    /**
+     * Task cloning is not allowed.
+     *
+     * @return null
+     * @throws LogicException
+     */
+    public function __clone();
 }

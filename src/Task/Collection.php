@@ -11,8 +11,6 @@
 
 namespace AndreasWeber\Runner\Task;
 
-use AndreasWeber\Runner\Task\TaskInterface;
-
 class Collection
 {
     /**

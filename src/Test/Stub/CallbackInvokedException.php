@@ -9,9 +9,11 @@
  * with this source code in the file LICENSE.
  */
 
-namespace AndreasWeber\Runner\TaskSet;
+namespace AndreasWeber\Runner\Test\Stub;
 
-class Builder
+use AndreasWeber\Runner\Exception\RunnerException;
+
+class CallbackInvokedException extends \Exception implements RunnerException
 {
 
 }

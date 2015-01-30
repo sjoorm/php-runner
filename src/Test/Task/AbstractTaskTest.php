@@ -72,19 +72,19 @@ class AbstractTaskTest extends \PHPUnit_Framework_TestCase
         $this->task->setMaxRetries('123');
     }
 
-    public function testMarkAsCleanupTask()
+    public function testMarkAsSuccessfullyExecuted()
     {
-        $this->task->markAsCleanupTask();
+        $this->task->markAsSuccessfullyExecuted();
 
         $this->assertTrue(
-            $this->task->isCleanupTask()
+            $this->task->isSuccessfullyExecuted()
         );
     }
 
-    public function testMarkAsCleanupTaskIsFalseByDefault()
+    public function testMarkAsSuccessfullyExecutedIsFalseByDefault()
     {
         $this->assertFalse(
-            $this->task->isCleanupTask()
+            $this->task->isSuccessfullyExecuted()
         );
     }
 
