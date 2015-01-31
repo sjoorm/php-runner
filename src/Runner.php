@@ -46,6 +46,11 @@ class Runner implements LoggerAwareInterface
     private $onFailureCallback;
 
     /**
+     * @var \SplObjectStorage Attached runners
+     */
+    private $runners;
+
+    /**
      * __construct()
      *
      * @param Collection $taskCollection
@@ -55,6 +60,7 @@ class Runner implements LoggerAwareInterface
     {
         $this->taskCollection = $taskCollection;
         $this->logger = $logger;
+        $this->runners = new \SplObjectStorage();
     }
 
     /**
@@ -109,7 +115,6 @@ class Runner implements LoggerAwareInterface
                 /** @var TaskInterface $task */
                 $task->setPayload($payload);
                 $this->runTask($task, $payload);
-
             } catch (\Exception $e) {
                 $this->logTask(
                     $task,
@@ -127,6 +132,9 @@ class Runner implements LoggerAwareInterface
 
         $this->log(LogLevel::INFO, 'All tasks we\'re processed.');
         $this->callOnSuccessCallback($payload);
+
+        $this->log(LogLevel::INFO, 'Calling attached runners.');
+        $this->notify($payload);
 
         return $payload;
     }
@@ -180,7 +188,7 @@ class Runner implements LoggerAwareInterface
      */
     private function callOnSuccessCallback(PayloadInterface $payload)
     {
-        $this->logger->log(LogLevel::INFO, 'Invoking success callback.');
+        $this->log(LogLevel::INFO, 'Invoking success callback.');
 
         if ($this->onSuccessCallback) {
             call_user_func($this->onSuccessCallback, $payload);
@@ -196,7 +204,7 @@ class Runner implements LoggerAwareInterface
      */
     private function callOnFailureCallback(PayloadInterface $payload)
     {
-        $this->logger->log(LogLevel::INFO, 'Invoking failure callback.');
+        $this->log(LogLevel::INFO, 'Invoking failure callback.');
 
         if ($this->onFailureCallback) {
             call_user_func($this->onFailureCallback, $payload);
@@ -280,5 +288,58 @@ class Runner implements LoggerAwareInterface
         $message = sprintf('Task: %s. ', $class) . $message;
 
         $this->log($level, $message, $context);
+    }
+
+    /**
+     * Notifies all attached runners to start execution with passed payload.
+     *
+     * @param PayloadInterface $payload
+     *
+     * @return $this
+     */
+    public function notify(PayloadInterface $payload)
+    {
+        foreach ($this->runners as $runner) {
+            /** @var Runner $runner */
+            $runner->run($payload);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Attaches a runner.
+     *
+     * @param Runner $runner
+     *
+     * @return $this
+     */
+    public function attach(Runner $runner)
+    {
+        if ($this->runners->contains($runner)) {
+            throw new LogicException('Can\'t attach already attached runner.');
+        }
+
+        $this->runners->attach($runner);
+
+        return $this;
+    }
+
+    /**
+     * Detaches a runner.
+     *
+     * @param Runner $runner
+     *
+     * @return $this
+     */
+    public function detach(Runner $runner)
+    {
+        if (!$this->runners->contains($runner)) {
+            throw new LogicException('Can\'t detach not attached runner.');
+        }
+
+        $this->runners->detach($runner);
+
+        return $this;
     }
 }

@@ -15,7 +15,7 @@ use AndreasWeber\Runner\Payload\ArrayPayload;
 use AndreasWeber\Runner\Runner;
 use AndreasWeber\Runner\Task\Collection;
 use AndreasWeber\Runner\Task\Retries\Retries;
-use AndreasWeber\Runner\Test\Stub\CallbackInvokedException;
+use AndreasWeber\Runner\Test\Stub\InvokedRunnerStub;
 use AndreasWeber\Runner\Test\Task\Stub\FailTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\RetryExceptionTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\RetryMethodTaskStub;
@@ -306,5 +306,84 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
             0,
             $task->getRunsCount()
         );
+    }
+
+    public function testDetachingRunner()
+    {
+        $runner = $this->runner;
+        $attachedRunner = new InvokedRunnerStub();
+
+        $runner->setTaskCollection($this->collection);
+        $runner->attach($attachedRunner);
+        $runner->detach($attachedRunner);
+
+        $runner->run($this->payload);
+
+        $this->assertFalse($attachedRunner->isInvoked());
+    }
+
+    public function testAttachedRunnerGetsInvokedWhenPreviousRunWasSuccessful()
+    {
+        $runner = $this->runner;
+
+        $attachedRunner = new InvokedRunnerStub();
+        $attachedRunner->setTaskCollection(
+            new Collection(
+                array(
+                    new TaskStub()
+                )
+            )
+        );
+
+        $runner->setTaskCollection($this->collection);
+        $runner->attach($attachedRunner);
+
+        $runner->run($this->payload);
+
+        $this->assertTrue($attachedRunner->isInvoked());
+    }
+
+    public function testAttachedRunnerGetsNotInvokedWhenPreviousRunFailed()
+    {
+        $runner = $this->runner;
+
+        $attachedRunner = new InvokedRunnerStub();
+        $runner->attach($attachedRunner);
+
+        $collection = new Collection();
+        $collection->addTask(new FailTaskStub());
+
+        $runner->setTaskCollection($collection);
+
+        try {
+            $runner->run($this->payload);
+        } catch (\Exception $e) {
+            // do nothing
+        }
+
+        $this->assertFalse($attachedRunner->isInvoked());
+    }
+
+    /**
+     * @expectedException \AndreasWeber\Runner\Exception\LogicException
+     * @expectedExceptionMessage Can't attach already attached runner.
+     */
+    public function testAttachingAlreadyAttachedRunnerFails()
+    {
+        $runner = new InvokedRunnerStub();
+
+        $this->runner->attach($runner);
+        $this->runner->attach($runner);
+    }
+
+    /**
+     * @expectedException \AndreasWeber\Runner\Exception\LogicException
+     * @expectedExceptionMessage Can't detach not attached runner.
+     */
+    public function testDetachingNotAttachedRunnerFails()
+    {
+        $runner = new InvokedRunnerStub();
+
+        $this->runner->detach($runner);
     }
 }
