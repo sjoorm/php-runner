@@ -11,7 +11,7 @@ Library to simplify the implementation of sophisticated interdependent tasks.
 - Pass a payload to task runner. Payload gets passed from task to task.
 - Skip single tasks during runtime by implementing unless() method.
 - Use setUp() and tearDown() on each task to prepare and cleanup task execution.
-- Use onSuccess() and onFailure() to attach callbacks.
+- Use onSuccess() and onFailure() to attach callbacks on task runner.
 - Call retry() in task to use task runners retry handling.
 - Call skip() in task to skip task processing.
 - Call fail() in task to fail complete task run.
@@ -25,8 +25,9 @@ Simply add a dependency on `andreas-weber/php-runner` to your project's [Compose
 
 ## Examples
 
-- [Simple Task-Runner](examples/simple-runner/example.php)
-- [Task-Runner with Retry-Handling](examples/runner-retry/example.php)
+- [Simple Task-Runner](examples/simple/example.php)
+- [Task-Runner with Retry-Handling](examples/retry/example.php)
+- [Using success callback](examples/success-callback/example.php)
 
 ## Developer
 
