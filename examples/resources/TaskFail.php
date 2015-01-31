@@ -15,8 +15,31 @@ use AndreasWeber\Runner\Payload\ArrayPayload;
 use AndreasWeber\Runner\Payload\PayloadInterface;
 use AndreasWeber\Runner\Task\AbstractTask;
 
-class Task1 extends AbstractTask
+class TaskFail extends AbstractTask
 {
+    /**
+     * @var int Run counter
+     */
+    private $runCounter;
+
+    /**
+     * @var int Fail count
+     */
+    private $failCount;
+
+    /**
+     * __construct()
+     *
+     * @param int $failCount
+     */
+    public function __construct($failCount)
+    {
+        parent::__construct();
+
+        $this->failCount = (int)$failCount;
+        $this->runCounter = 0;
+    }
+
     /**
      * Executes the task.
      *
@@ -26,6 +49,14 @@ class Task1 extends AbstractTask
      */
     public function run(PayloadInterface $payload)
     {
+        $this->runCounter++;
+
+        if ($this->runCounter <= $this->failCount) {
+            // 2 retries triggered by method
+            echo __CLASS__ . ' failed. Triggering retry!!' . PHP_EOL;
+            $this->retry();
+        }
+
         /** @var ArrayPayload $payload */
         $payload->setData(
             array_merge(

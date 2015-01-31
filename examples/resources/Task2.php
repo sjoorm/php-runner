@@ -31,7 +31,7 @@ class Task2 extends AbstractTask
             array_merge(
                 $payload->getData(),
                 array(
-                    'task2' => true
+                    __CLASS__ => true
                 )
             )
         );
