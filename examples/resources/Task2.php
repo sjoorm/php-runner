@@ -35,7 +35,5 @@ class Task2 extends AbstractTask
                 )
             )
         );
-
-        echo __CLASS__ . ' executed!' . PHP_EOL;
     }
 }

@@ -22,7 +22,7 @@ $collection->addTask(new Task1());
 $collection->addTask(new Task2());
 
 $payload = new ArrayPayload();
-$runner = new Runner($collection);
+$runner = new Runner($collection, $logger);
 
 $runner->run($payload);
 

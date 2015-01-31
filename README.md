@@ -28,6 +28,7 @@ Simply add a dependency on `andreas-weber/php-runner` to your project's [Compose
 - [Simple Task-Runner](examples/simple/example.php)
 - [Task-Runner with Retry-Handling](examples/retry/example.php)
 - [Using success callback](examples/success-callback/example.php)
+- [Chain task runners](examples/chain-runners/example.php)
 
 ## Developer
 

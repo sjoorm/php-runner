@@ -11,27 +11,44 @@
 
 use AndreasWeber\Runner\Example\Task1;
 use AndreasWeber\Runner\Example\Task2;
-use AndreasWeber\Runner\Example\TaskFail;
 use AndreasWeber\Runner\Payload\ArrayPayload;
 use AndreasWeber\Runner\Runner;
 use AndreasWeber\Runner\Task\Collection;
-use AndreasWeber\Runner\Task\Retries\Retries;
 
 require_once __DIR__ . '/../resources/bootstrap.php';
 
-$collection = new Collection();
-$collection->addTask(new Task1());
-$collection->addTask(new Task2());
+//
+// Runner 1
+//
 
-$retryTask = new TaskFail(2); // task will fail 2 times, just for demonstration ;-)
-$retryTask->setMaxRetries(new Retries(3)); // task will get retried 3 times
+$collection1 = new Collection();
+$collection1->addTask(new Task1());
+$collection1->addTask(new Task2());
 
-$collection->addTask($retryTask);
+$runner1 = new Runner($collection1, $logger);
+
+//
+// Runner 2
+//
+
+$collection2 = new Collection();
+$collection2->addTask(new Task1());
+$collection2->addTask(new Task2());
+
+$runner2 = new Runner($collection2, $logger);
+
+//
+// Chaining
+//
+
+$runner1->attach($runner2);
+
+//
+// Invoke execution
+//
 
 $payload = new ArrayPayload();
-$runner = new Runner($collection, $logger);
-
-$runner->run($payload);
+$runner1->run($payload);
 
 // dump payload
 var_export($payload);

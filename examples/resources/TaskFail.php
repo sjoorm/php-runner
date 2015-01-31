@@ -53,7 +53,6 @@ class TaskFail extends AbstractTask
 
         if ($this->runCounter <= $this->failCount) {
             // 2 retries triggered by method
-            echo __CLASS__ . ' failed. Triggering retry!!' . PHP_EOL;
             $this->retry();
         }
 
@@ -66,7 +65,5 @@ class TaskFail extends AbstractTask
                 )
             )
         );
-
-        echo __CLASS__ . ' executed!' . PHP_EOL;
     }
 }
