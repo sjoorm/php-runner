@@ -28,8 +28,11 @@ class Task2 extends AbstractTask
     {
         /** @var ArrayPayload $payload */
         $payload->setData(
-            array(
-                'task2' => true
+            array_merge(
+                $payload->getData(),
+                array(
+                    'task2' => true
+                )
             )
         );
 

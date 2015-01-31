@@ -4,6 +4,10 @@
 
 Library to simplify the implementation of sophisticated interdependent tasks.
 
+## Features
+
+tbd...
+
 ## Requirements
 Check shipped composer.json.
 
@@ -11,7 +15,7 @@ Check shipped composer.json.
 
 Simply add a dependency on `andreas-weber/php-runner` to your project's [Composer](http://getcomposer.org/) `composer.json` file.
 
-## Usage
+## Examples
 
 - [Simple Task-Runner](examples/simple-runner/README.md)
 
