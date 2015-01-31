@@ -25,7 +25,7 @@ Simply add a dependency on `andreas-weber/php-runner` to your project's [Compose
 
 ## Examples
 
-- [Simple Task-Runner](examples/simple-runner/README.md)
+- [Simple Task-Runner](examples/simple-runner/example.php)
 
 ## Developer
 
