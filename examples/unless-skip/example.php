@@ -20,7 +20,7 @@ require_once __DIR__ . '/../resources/bootstrap.php';
 
 $collection = new Collection();
 $collection->addTask(new Task1());
-$collection->addTask(new TaskUnless());;
+$collection->addTask(new TaskUnless()); // task won't run before 21:00, see unless()
 
 $payload = new ArrayPayload();
 $runner = new Runner($collection, $logger);
