@@ -6,7 +6,15 @@ Library to simplify the implementation of sophisticated interdependent tasks.
 
 ## Features
 
-tbd...
+- Encapsulate logic in different tasks instead of writing spaghetti code.
+- Chain task runners to describe dependencies between tasks.
+- Pass a payload to task runner. Payload gets passed from task to task.
+- Skip single Tasks during runtime by implementing unless() method.
+- Use setUp() and tearDown() on each task to prepare and shutdown task execution.
+- Use onSuccess() and onFailure() to attach callbacks.
+- Call retry() in task to use task runners retry handling.
+- Call skip() in task to skip task processing.
+- Call fail() in task to fail complete task run.
 
 ## Requirements
 Check shipped composer.json.

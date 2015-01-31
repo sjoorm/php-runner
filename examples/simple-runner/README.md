@@ -1,6 +1,6 @@
 # Example: Simple Task-Runner
 
-```
+```php
 <?php
 
 /*

@@ -15,12 +15,7 @@ use AndreasWeber\Runner\Payload\ArrayPayload;
 use AndreasWeber\Runner\Runner;
 use AndreasWeber\Runner\Task\Collection;
 
-define('BASEPATH', __DIR__ . '/../../');
-
-require_once BASEPATH . '/vendor/autoload.php';
-
-require_once BASEPATH . '/examples/resources/Task1.php';
-require_once BASEPATH . '/examples/resources/Task2.php';
+require_once __DIR__ . '/../resources/bootstrap.php';
 
 $collection = new Collection();
 $collection->addTask(new Task1());
