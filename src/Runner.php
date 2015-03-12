@@ -130,7 +130,7 @@ class Runner implements LoggerAwareInterface
             }
         }
 
-        $this->log(LogLevel::INFO, 'All tasks we\'re processed.');
+        $this->log(LogLevel::INFO, 'All tasks were processed.');
         $this->callOnSuccessCallback($payload);
 
         $this->log(LogLevel::INFO, 'Calling attached runners.');
