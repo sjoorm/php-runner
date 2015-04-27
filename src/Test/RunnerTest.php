@@ -16,6 +16,7 @@ use AndreasWeber\Runner\Runner;
 use AndreasWeber\Runner\Task\Collection;
 use AndreasWeber\Runner\Task\Retries\Retries;
 use AndreasWeber\Runner\Test\Stub\InvokedRunnerStub;
+use AndreasWeber\Runner\Test\Task\Stub\ExitCodeOneStub;
 use AndreasWeber\Runner\Test\Task\Stub\FailTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\RetryExceptionTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\RetryMethodTaskStub;
@@ -385,5 +386,33 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
         $runner = new InvokedRunnerStub();
 
         $this->runner->detach($runner);
+    }
+
+    /**
+     * @expectedException \AndreasWeber\Runner\Runner\Exception\RunFailedException
+     * @expectedExceptionMessage Complete run failed: Task: AndreasWeber\Runner\Test\Task\Stub\ExitCodeOneStub failed with exit code 1
+     */
+    public function testWhenFailOnErrorTrueAndExitCodeNotEqualZeroTaskFails()
+    {
+        $task = new ExitCodeOneStub();
+        $task->setFailOnError(true);
+
+        $collection = new Collection();
+        $collection->addTask($task);
+
+        $this->runner->setTaskCollection($collection);
+        $this->runner->run($this->payload);
+    }
+
+    public function testWhenFailOnErrorFalseAndExitCodeNotEqualZeroRunIsSuccessful()
+    {
+        $task = new ExitCodeOneStub();
+        $task->setFailOnError(false);
+
+        $collection = new Collection();
+        $collection->addTask($task);
+
+        $this->runner->setTaskCollection($collection);
+        $this->runner->run($this->payload);
     }
 }

@@ -142,4 +142,20 @@ class AbstractTaskTest extends \PHPUnit_Framework_TestCase
         /** @noinspection PhpUnusedLocalVariableInspection */
         $cloned = clone $this->task;
     }
+
+    public function testIsFailOnErrorFalseByDefault()
+    {
+        $this->assertFalse(
+            $this->task->isFailOnError()
+        );
+    }
+
+    public function testSettingIsFailOnErrorIsSuccessful()
+    {
+        $this->task->setFailOnError(true);
+
+        $this->assertTrue(
+            $this->task->isFailOnError()
+        );
+    }
 }

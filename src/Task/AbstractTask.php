@@ -37,11 +37,17 @@ abstract class AbstractTask implements TaskInterface
     private $successfullyExecuted;
 
     /**
+     * @var bool Fail task when a exit code other than 0 is given
+     */
+    private $failOnError;
+
+    /**
      * __construct()
      */
     public function __construct()
     {
         $this->successfullyExecuted = false;
+        $this->setFailOnError(false);
     }
 
     /**
@@ -121,6 +127,32 @@ abstract class AbstractTask implements TaskInterface
     public function isSuccessfullyExecuted()
     {
         return $this->successfullyExecuted;
+    }
+
+    /**
+     * Set to true, when task should fail,
+     * when a different exit code than 0 is given.
+     *
+     * @param bool $failOnError
+     *
+     * @return $this
+     */
+    public function setFailOnError($failOnError)
+    {
+        $this->failOnError = (bool)$failOnError;
+
+        return $this;
+    }
+
+    /**
+     * Returns boolean true, when task should fail,
+     * when a different exit code than 0 is given.
+     *
+     * @return boolean
+     */
+    public function isFailOnError()
+    {
+        return $this->failOnError;
     }
 
     /**

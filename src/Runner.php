@@ -158,8 +158,26 @@ class Runner implements LoggerAwareInterface
             }
 
             $task->setUp();
-            $task->run($payload);
+            $exitCode = (int)$task->run($payload) ?: 0;
             $task->tearDown();
+
+            if ($task->isFailOnError() && $exitCode !== 0) {
+                throw new FailException(
+                    sprintf(
+                        'Task: %s failed with exit code %s',
+                        get_class($task),
+                        $exitCode
+                    )
+                );
+            }
+
+            $message = sprintf('Task exited with status code %s', $exitCode);
+            if ($exitCode === 0) {
+                $this->logTask($task, LogLevel::INFO, $message);
+            } else {
+                $this->logTask($task, LogLevel::WARNING, $message);
+            }
+
             $task->markAsSuccessfullyExecuted();
         } catch (SkipException $e) {
             $this->logTask($task, LogLevel::INFO, 'Skipping.');
@@ -172,7 +190,14 @@ class Runner implements LoggerAwareInterface
             $this->runTask($task, $payload);
             return;
         } catch (FailException $e) {
-            $this->logTask($task, LogLevel::INFO, 'Failure thrown.');
+            $this->logTask(
+                $task,
+                LogLevel::INFO,
+                sprintf(
+                    'Failure thrown. Given message: %s',
+                    $e->getMessage()
+                )
+            );
             throw $e;
         }
 

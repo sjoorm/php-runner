@@ -54,7 +54,7 @@ interface TaskInterface
      *
      * @param PayloadInterface $payload
      *
-     * @return null
+     * @return null|int The exit status code
      */
     public function run(PayloadInterface $payload);
 
@@ -104,4 +104,22 @@ interface TaskInterface
      * @throws LogicException
      */
     public function __clone();
+
+    /**
+     * Set to true, when task should fail,
+     * when a different exit code than 0 is given.
+     *
+     * @param bool $failOnError
+     *
+     * @return $this
+     */
+    public function setFailOnError($failOnError);
+
+    /**
+     * Returns boolean true, when task should fail,
+     * when a different exit code than 0 is given.
+     *
+     * @return boolean
+     */
+    public function isFailOnError();
 }
