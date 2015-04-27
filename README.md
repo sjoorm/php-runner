@@ -26,11 +26,12 @@ Simply add a dependency on `andreas-weber/php-runner` to your project's [Compose
 ## Examples
 
 - [Simple Task-Runner](examples/simple/example.php)
-- [Task-Runner with Retry-Handling](examples/retry/example.php)
-- [Using setUp() and tearDown()](examples/retry/setup-teardown.php)
+- [Task-Runner with retry handling](examples/retry/example.php)
+- [Using setUp() and tearDown()](examples/setup-teardown/example.php)
 - [Using success callback](examples/success-callback/example.php)
 - [Skip task under certain circumstances](examples/unless-skip/example.php)
 - [Chain task runners](examples/chain-runners/example.php)
+- [Raise exception, when exit code is not zero](examples/exit-code/example.php)
 
 ## Developer
 
