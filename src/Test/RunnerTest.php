@@ -15,6 +15,7 @@ use AndreasWeber\Runner\Payload\ArrayPayload;
 use AndreasWeber\Runner\Runner;
 use AndreasWeber\Runner\Task\Collection;
 use AndreasWeber\Runner\Task\Retries\Retries;
+use AndreasWeber\Runner\Task\TaskInterface;
 use AndreasWeber\Runner\Test\Stub\InvokedRunnerStub;
 use AndreasWeber\Runner\Test\Task\Stub\ExitCodeOneStub;
 use AndreasWeber\Runner\Test\Task\Stub\FailTaskStub;
@@ -111,7 +112,7 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
 
         $this->runner->run($this->payload);
 
-        $this->assertSame(1, $count);
+        $this->assertSame(1, $count, 'Callback not invoked');
     }
 
     public function testFailureCallbackIsInvoked()
@@ -134,8 +135,94 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
             // do nothing
         }
 
-        $this->assertSame(1, $count);
+        $this->assertSame(1, $count, 'Callback not invoked');
     }
+
+    public function testTaskExecutionCallbackIsInvoked()
+    {
+        $this->runner->setTaskCollection($this->collection);
+
+        $count = 0;
+        $this->runner->onTaskExecution(
+            function () use (&$count) {
+                $count++;
+            }
+        );
+
+        $this->runner->run($this->payload);
+
+        $this->assertSame(1, $count, 'Callback not invoked');
+    }
+
+    public function testTaskSuccessCallbackIsInvoked()
+    {
+        $this->runner->setTaskCollection($this->collection);
+
+        $count = 0;
+        $this->runner->onTaskSuccess(
+            function () use (&$count) {
+                $count++;
+            }
+        );
+
+        $this->runner->run($this->payload);
+
+        $this->assertSame(1, $count, 'Callback not invoked');
+    }
+
+
+    public function testTaskFailureCallbackIsInvokedByUnexpectedException()
+    {
+        $task = new UnknownExceptionTaskStub();
+        $task->setFailOnError(true);
+
+        $collection = new Collection();
+        $collection->addTask($task);
+
+        $this->runner->setTaskCollection($collection);
+
+        $count = 0;
+        $this->runner->onTaskFailure(
+            function () use (&$count) {
+                $count++;
+            }
+        );
+
+        try {
+            $this->runner->run($this->payload);
+        } catch (\Exception $e) {
+            // do nothing
+        }
+
+        $this->assertSame(1, $count, 'Callback not invoked');
+    }
+
+    public function testTaskFailureCallbackIsInvokedByExitCodeNotZeroOrNull()
+    {
+        $task = new ExitCodeOneStub();
+        $task->setFailOnError(true);
+
+        $collection = new Collection();
+        $collection->addTask($task);
+
+        $this->runner->setTaskCollection($collection);
+
+        $count = 0;
+        $this->runner->onTaskFailure(
+            function () use (&$count) {
+                $count++;
+            }
+        );
+
+        try {
+            $this->runner->run($this->payload);
+        } catch (\Exception $e) {
+            // do nothing
+        }
+
+        $this->assertSame(1, $count, 'Callback not invoked');
+    }
+
 
     public function testSetUpIsCalled()
     {
@@ -390,7 +477,8 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \AndreasWeber\Runner\Runner\Exception\RunFailedException
-     * @expectedExceptionMessage Complete run failed: Task: AndreasWeber\Runner\Test\Task\Stub\ExitCodeOneStub failed with exit code 1
+     * @expectedExceptionMessage Complete run failed: Task: AndreasWeber\Runner\Test\Task\Stub\ExitCodeOneStub failed
+     *                           with exit code 1
      */
     public function testWhenFailOnErrorTrueAndExitCodeNotEqualZeroTaskFails()
     {

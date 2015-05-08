@@ -46,6 +46,21 @@ class Runner implements LoggerAwareInterface
     private $onFailureCallback;
 
     /**
+     * @var callable Task execution callback
+     */
+    private $onTaskExecutionCallback;
+
+    /**
+     * @var callable Task success callback
+     */
+    private $onTaskSuccessCallback;
+
+    /**
+     * @var callable Task failure callback
+     */
+    private $onTaskFailureCallback;
+
+    /**
      * @var \SplObjectStorage Attached runners
      */
     private $runners;
@@ -53,7 +68,7 @@ class Runner implements LoggerAwareInterface
     /**
      * __construct()
      *
-     * @param Collection $taskCollection
+     * @param Collection      $taskCollection
      * @param LoggerInterface $logger
      */
     public function __construct(Collection $taskCollection = null, LoggerInterface $logger = null)
@@ -142,7 +157,7 @@ class Runner implements LoggerAwareInterface
     /**
      * Invokes the task execution.
      *
-     * @param TaskInterface $task
+     * @param TaskInterface    $task
      * @param PayloadInterface $payload
      *
      * @return null
@@ -157,11 +172,14 @@ class Runner implements LoggerAwareInterface
                 return;
             }
 
+            $this->callOnTaskExecutionCallback($task, $payload);
+
             $task->setUp();
             $exitCode = (int)$task->run($payload) ?: 0;
             $task->tearDown();
 
             if ($task->isFailOnError() && $exitCode !== 0) {
+                $this->callOnTaskFailureCallback($task, $payload, $exitCode);
                 throw new FailException(
                     sprintf(
                         'Task: %s failed with exit code %s',
@@ -178,6 +196,7 @@ class Runner implements LoggerAwareInterface
                 $this->logTask($task, LogLevel::WARNING, $message);
             }
 
+            $this->callOnTaskSuccessCallback($task, $payload);
             $task->markAsSuccessfullyExecuted();
         } catch (SkipException $e) {
             $this->logTask($task, LogLevel::INFO, 'Skipping.');
@@ -192,12 +211,15 @@ class Runner implements LoggerAwareInterface
         } catch (FailException $e) {
             $this->logTask(
                 $task,
-                LogLevel::INFO,
+                LogLevel::WARNING,
                 sprintf(
                     'Failure thrown. Given message: %s',
                     $e->getMessage()
                 )
             );
+            throw $e;
+        } catch (\Exception $e) {
+            $this->callOnTaskFailureCallback($task, $payload);
             throw $e;
         }
 
@@ -237,6 +259,58 @@ class Runner implements LoggerAwareInterface
     }
 
     /**
+     * Invokes task execution callback.
+     *
+     * @param TaskInterface    $task
+     * @param PayloadInterface $payload
+     *
+     * @return null
+     */
+    private function callOnTaskExecutionCallback(TaskInterface $task, PayloadInterface $payload)
+    {
+        $this->log(LogLevel::INFO, 'Invoking task execution callback.');
+
+        if ($this->onTaskExecutionCallback) {
+            call_user_func($this->onTaskExecutionCallback, $task, $payload);
+        }
+    }
+
+    /**
+     * Invokes task success callback.
+     *
+     * @param TaskInterface    $task
+     * @param PayloadInterface $payload
+     *
+     * @return null
+     */
+    private function callOnTaskSuccessCallback(TaskInterface $task, PayloadInterface $payload)
+    {
+        $this->log(LogLevel::INFO, 'Invoking task success callback.');
+
+        if ($this->onTaskSuccessCallback) {
+            call_user_func($this->onTaskSuccessCallback, $task, $payload);
+        }
+    }
+
+    /**
+     * Invokes task failure callback.
+     *
+     * @param TaskInterface    $task
+     * @param PayloadInterface $payload
+     * @param int              $exitCode
+     *
+     * @return null
+     */
+    private function callOnTaskFailureCallback(TaskInterface $task, PayloadInterface $payload, $exitCode = null)
+    {
+        $this->log(LogLevel::INFO, 'Invoking task failure callback.');
+
+        if ($this->onTaskFailureCallback) {
+            call_user_func($this->onTaskFailureCallback, $task, $payload, $exitCode);
+        }
+    }
+
+    /**
      * Success-Callback.
      * Callback will be invoked, when run was successful.
      *
@@ -267,6 +341,51 @@ class Runner implements LoggerAwareInterface
     }
 
     /**
+     * Task-Execution-Callback.
+     * Callback will be invoked every time, a task is processed.
+     *
+     * @param callable $callable The callable to execute
+     *
+     * @return $this
+     */
+    public function onTaskExecution(callable $callable)
+    {
+        $this->onTaskExecutionCallback = $callable;
+
+        return $this;
+    }
+
+    /**
+     * Task-Success-Callback.
+     * Callback will be invoked every time, a task is processed successfully.
+     *
+     * @param callable $callable The callable to execute
+     *
+     * @return $this
+     */
+    public function onTaskSuccess(callable $callable)
+    {
+        $this->onTaskSuccessCallback = $callable;
+
+        return $this;
+    }
+
+    /**
+     * Task-Failure-Callback.
+     * Callback will be invoked every time, a task is processed with failure.
+     *
+     * @param callable $callable The callable to execute
+     *
+     * @return $this
+     */
+    public function onTaskFailure(callable $callable)
+    {
+        $this->onTaskFailureCallback = $callable;
+
+        return $this;
+    }
+
+    /**
      * Sets a logger instance on the object
      *
      * @param LoggerInterface $logger
@@ -283,9 +402,9 @@ class Runner implements LoggerAwareInterface
     /**
      * Logs with an arbitrary level.
      *
-     * @param mixed $level
+     * @param mixed  $level
      * @param string $message
-     * @param array $context
+     * @param array  $context
      *
      * @return null
      */
@@ -301,9 +420,9 @@ class Runner implements LoggerAwareInterface
      * Specialized to pass a task instance.
      *
      * @param TaskInterface $task
-     * @param mixed $level
-     * @param string $message
-     * @param array $context
+     * @param mixed         $level
+     * @param string        $message
+     * @param array         $context
      *
      * @return null
      */

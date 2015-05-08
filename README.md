@@ -12,6 +12,7 @@ Library to simplify the implementation of sophisticated interdependent tasks.
 - Skip single tasks during runtime by implementing unless() method.
 - Use setUp() and tearDown() on each task to prepare and cleanup task execution.
 - Use onSuccess() and onFailure() to attach callbacks on task runner.
+- Use onTaskExecution(), onTaskSuccess() and onTaskFailure() to attach callbacks on single tasks.
 - Call retry() in task to use task runners retry handling.
 - Call skip() in task to skip task processing.
 - Call fail() in task to fail complete task run.
