@@ -11,9 +11,6 @@
 
 namespace AndreasWeber\Runner\Test\Task\Stub;
 
-use AndreasWeber\Runner\Payload\PayloadInterface;
-use AndreasWeber\Runner\Task\AbstractTask;
-
 class UnlessFalseTaskStub extends RunCounterTaskStub
 {
     public function unless()

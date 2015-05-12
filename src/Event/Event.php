@@ -12,8 +12,8 @@
 namespace AndreasWeber\Runner\Event;
 
 use AndreasWeber\Runner\Payload\PayloadInterface;
-use AndreasWeber\Runner\Task\TaskInterface;
 use AndreasWeber\Runner\Runner;
+use AndreasWeber\Runner\Task\TaskInterface;
 use Symfony\Component\EventDispatcher\Event as BaseEvent;
 
 class Event extends BaseEvent implements EventInterface

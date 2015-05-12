@@ -15,16 +15,12 @@ use AndreasWeber\Runner\Payload\ArrayPayload;
 use AndreasWeber\Runner\Runner;
 use AndreasWeber\Runner\Task\Collection;
 use AndreasWeber\Runner\Task\Retries\Retries;
-use AndreasWeber\Runner\Test\Stub\RunnerInvokedStub;
 use AndreasWeber\Runner\Test\Task\Stub\ExitCodeOneStub;
 use AndreasWeber\Runner\Test\Task\Stub\FailTaskStub;
-use AndreasWeber\Runner\Test\Task\Stub\RetryExceptionTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\RetryMethodTaskStub;
-use AndreasWeber\Runner\Test\Task\Stub\SetUpTearDownCalledTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\SkipTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\TaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\UnknownExceptionTaskStub;
-use AndreasWeber\Runner\Test\Task\Stub\UnlessFalseTaskStub;
 use Monolog\Logger;
 
 class RunnerEventTest extends \PHPUnit_Framework_TestCase
