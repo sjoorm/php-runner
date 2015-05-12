@@ -12,8 +12,55 @@
 namespace AndreasWeber\Runner\Event;
 
 use AndreasWeber\Runner\Payload\PayloadInterface;
+use AndreasWeber\Runner\Task\TaskInterface;
 
 interface EventInterface
 {
-    public function __invoke(PayloadInterface $payload);
+    /**
+     * Sets the task.
+     *
+     * @param TaskInterface $task
+     *
+     * @return $this
+     */
+    public function setTask(TaskInterface $task);
+
+    /**
+     * Returns the task
+     *
+     * @return TaskInterface
+     */
+    public function getTask();
+
+    /**
+     * Sets the payload.
+     *
+     * @param PayloadInterface $payload
+     *
+     * @return $this
+     */
+    public function setPayload(PayloadInterface $payload);
+
+    /**
+     * Returns the payload.
+     *
+     * @return PayloadInterface
+     */
+    public function getPayload();
+
+    /**
+     * Sets the exit code.
+     *
+     * @param int $exitCode
+     *
+     * @return $this
+     */
+    public function setExitCode($exitCode);
+
+    /**
+     * Returns the exit code.
+     *
+     * @return int
+     */
+    public function getExitCode();
 }
