@@ -11,6 +11,7 @@
 
 namespace AndreasWeber\Runner;
 
+use AndreasWeber\Runner\Event\Event;
 use AndreasWeber\Runner\Exception\LogicException;
 use AndreasWeber\Runner\Payload\PayloadInterface;
 use AndreasWeber\Runner\Runner\Exception\RunFailedException;
@@ -22,6 +23,8 @@ use AndreasWeber\Runner\Task\TaskInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Psr\Log\NullLogger;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class Runner implements LoggerAwareInterface
 {
@@ -36,46 +39,26 @@ class Runner implements LoggerAwareInterface
     private $logger;
 
     /**
-     * @var callable Success callback
-     */
-    private $onSuccessCallback;
-
-    /**
-     * @var callable Failure callback
-     */
-    private $onFailureCallback;
-
-    /**
-     * @var callable Task execution callback
-     */
-    private $onTaskExecutionCallback;
-
-    /**
-     * @var callable Task success callback
-     */
-    private $onTaskSuccessCallback;
-
-    /**
-     * @var callable Task failure callback
-     */
-    private $onTaskFailureCallback;
-
-    /**
      * @var \SplObjectStorage Attached runners
      */
     private $runners;
 
     /**
+     * @var EventDispatcher Event dispatcher
+     */
+    private $eventDispatcher;
+
+    /**
      * __construct()
      *
-     * @param Collection      $taskCollection
-     * @param LoggerInterface $logger
+     * @param Collection $taskCollection
      */
-    public function __construct(Collection $taskCollection = null, LoggerInterface $logger = null)
+    public function __construct(Collection $taskCollection = null)
     {
         $this->taskCollection = $taskCollection;
-        $this->logger = $logger;
+        $this->logger = new NullLogger();
         $this->runners = new \SplObjectStorage();
+        $this->eventDispatcher = new EventDispatcher();
     }
 
     /**
@@ -124,6 +107,7 @@ class Runner implements LoggerAwareInterface
         }
 
         $this->log(LogLevel::INFO, sprintf('Starting runner with %s tasks ready for execution.', $tasksCount));
+        $this->dispatch('runner.start', null, $payload);
 
         foreach ($tasks as $task) {
             try {
@@ -136,7 +120,7 @@ class Runner implements LoggerAwareInterface
                     LogLevel::ERROR,
                     sprintf('An exception was thrown. Message: %s', $e->getMessage())
                 );
-                $this->callOnFailureCallback($payload);
+                $this->dispatch('runner.failure', null, null, null, $e);
                 throw new RunFailedException(
                     'Complete run failed: ' . $e->getMessage(),
                     $e->getCode(),
@@ -146,10 +130,11 @@ class Runner implements LoggerAwareInterface
         }
 
         $this->log(LogLevel::INFO, 'All tasks were processed.');
-        $this->callOnSuccessCallback($payload);
-
         $this->log(LogLevel::INFO, 'Calling attached runners.');
         $this->notify($payload);
+
+        $this->log(LogLevel::INFO, 'Execution successful.');
+        $this->dispatch('runner.success', null, $payload);
 
         return $payload;
     }
@@ -172,14 +157,13 @@ class Runner implements LoggerAwareInterface
                 return;
             }
 
-            $this->callOnTaskExecutionCallback($task, $payload);
+            $this->dispatch('runner.task.start', $task, $payload);
 
             $task->setUp();
             $exitCode = (int)$task->run($payload) ?: 0;
             $task->tearDown();
 
             if ($task->isFailOnError() && $exitCode !== 0) {
-                $this->callOnTaskFailureCallback($task, $payload, $exitCode);
                 throw new FailException(
                     sprintf(
                         'Task: %s failed with exit code %s',
@@ -196,12 +180,14 @@ class Runner implements LoggerAwareInterface
                 $this->logTask($task, LogLevel::WARNING, $message);
             }
 
-            $this->callOnTaskSuccessCallback($task, $payload);
+            $this->dispatch('runner.task.success', $task, $payload, $exitCode);
             $task->markAsSuccessfullyExecuted();
         } catch (SkipException $e) {
             $this->logTask($task, LogLevel::INFO, 'Skipping.');
+            $this->dispatch('runner.task.skip', $task, $payload);
         } catch (RetryException $e) {
             $this->logTask($task, LogLevel::NOTICE, 'Retry thrown. Starting again.');
+            $this->dispatch('runner.task.retry', $task, $payload);
             if (!$task->getMaxRetries()) {
                 throw new LogicException('A retry exception was thrown, but no retries instance was set.');
             }
@@ -217,172 +203,18 @@ class Runner implements LoggerAwareInterface
                     $e->getMessage()
                 )
             );
-            throw $e;
-        } catch (\Exception $e) {
-            $this->callOnTaskFailureCallback($task, $payload);
+
+            $exitCode = $e->getCode();
+            if (is_int($exitCode)) {
+                $this->dispatch('runner.task.failure', $task, $payload, $exitCode);
+            } else {
+                $this->dispatch('runner.task.failure', $task, $payload);
+            }
+
             throw $e;
         }
 
         $this->logTask($task, LogLevel::INFO, 'Execution successful.');
-    }
-
-    /**
-     * Invokes success callback.
-     *
-     * @param PayloadInterface $payload
-     *
-     * @return null
-     */
-    private function callOnSuccessCallback(PayloadInterface $payload)
-    {
-        $this->log(LogLevel::INFO, 'Invoking success callback.');
-
-        if ($this->onSuccessCallback) {
-            call_user_func($this->onSuccessCallback, $payload);
-        }
-    }
-
-    /**
-     * Invokes failure callback.
-     *
-     * @param PayloadInterface $payload
-     *
-     * @return null
-     */
-    private function callOnFailureCallback(PayloadInterface $payload)
-    {
-        $this->log(LogLevel::INFO, 'Invoking failure callback.');
-
-        if ($this->onFailureCallback) {
-            call_user_func($this->onFailureCallback, $payload);
-        }
-    }
-
-    /**
-     * Invokes task execution callback.
-     *
-     * @param TaskInterface    $task
-     * @param PayloadInterface $payload
-     *
-     * @return null
-     */
-    private function callOnTaskExecutionCallback(TaskInterface $task, PayloadInterface $payload)
-    {
-        $this->log(LogLevel::INFO, 'Invoking task execution callback.');
-
-        if ($this->onTaskExecutionCallback) {
-            call_user_func($this->onTaskExecutionCallback, $task, $payload);
-        }
-    }
-
-    /**
-     * Invokes task success callback.
-     *
-     * @param TaskInterface    $task
-     * @param PayloadInterface $payload
-     *
-     * @return null
-     */
-    private function callOnTaskSuccessCallback(TaskInterface $task, PayloadInterface $payload)
-    {
-        $this->log(LogLevel::INFO, 'Invoking task success callback.');
-
-        if ($this->onTaskSuccessCallback) {
-            call_user_func($this->onTaskSuccessCallback, $task, $payload);
-        }
-    }
-
-    /**
-     * Invokes task failure callback.
-     *
-     * @param TaskInterface    $task
-     * @param PayloadInterface $payload
-     * @param int              $exitCode
-     *
-     * @return null
-     */
-    private function callOnTaskFailureCallback(TaskInterface $task, PayloadInterface $payload, $exitCode = null)
-    {
-        $this->log(LogLevel::INFO, 'Invoking task failure callback.');
-
-        if ($this->onTaskFailureCallback) {
-            call_user_func($this->onTaskFailureCallback, $task, $payload, $exitCode);
-        }
-    }
-
-    /**
-     * Success-Callback.
-     * Callback will be invoked, when run was successful.
-     *
-     * @param callable $callable The callable to execute
-     *
-     * @return $this
-     */
-    public function onSuccess(callable $callable)
-    {
-        $this->onSuccessCallback = $callable;
-
-        return $this;
-    }
-
-    /**
-     * Failure-Callback.
-     * Callback will be invoked, when run failed with errors.
-     *
-     * @param callable $callable The callable to execute
-     *
-     * @return $this
-     */
-    public function onFailure(callable $callable)
-    {
-        $this->onFailureCallback = $callable;
-
-        return $this;
-    }
-
-    /**
-     * Task-Execution-Callback.
-     * Callback will be invoked every time, a task is processed.
-     *
-     * @param callable $callable The callable to execute
-     *
-     * @return $this
-     */
-    public function onTaskExecution(callable $callable)
-    {
-        $this->onTaskExecutionCallback = $callable;
-
-        return $this;
-    }
-
-    /**
-     * Task-Success-Callback.
-     * Callback will be invoked every time, a task is processed successfully.
-     *
-     * @param callable $callable The callable to execute
-     *
-     * @return $this
-     */
-    public function onTaskSuccess(callable $callable)
-    {
-        $this->onTaskSuccessCallback = $callable;
-
-        return $this;
-    }
-
-    /**
-     * Task-Failure-Callback.
-     * Callback will be invoked every time, a task is processed with failure.
-     *
-     * @param callable $callable The callable to execute
-     *
-     * @return $this
-     */
-    public function onTaskFailure(callable $callable)
-    {
-        $this->onTaskFailureCallback = $callable;
-
-        return $this;
     }
 
     /**
@@ -485,5 +317,71 @@ class Runner implements LoggerAwareInterface
         $this->runners->detach($runner);
 
         return $this;
+    }
+
+    /**
+     * Register an callable to an event.
+     *
+     * @param string   $eventName
+     * @param callable $callable
+     *
+     * @return $this
+     */
+    public function on($eventName, callable $callable)
+    {
+        \Assert\that($eventName)->string()->notEmpty();
+
+        $this->eventDispatcher->addListener($eventName, $callable);
+
+        return $this;
+    }
+
+    /**
+     * Dispatches an event.
+     *
+     * @param string                $eventName
+     * @param null|TaskInterface    $task
+     * @param null|PayloadInterface $payload
+     * @param null|int              $exitCode
+     * @param null|\Exception       $exception
+     *
+     * @return null
+     */
+    private function dispatch(
+        $eventName,
+        TaskInterface $task = null,
+        PayloadInterface $payload = null,
+        $exitCode = null,
+        \Exception $exception = null
+    ) {
+        \Assert\that($eventName)->string()->notEmpty();
+
+        $event = new Event();
+        $event->setRunner($this);
+
+        if ($task) {
+            $event->setTask($task);
+        }
+
+        if ($payload) {
+            $event->setPayload($payload);
+        }
+
+        if (!is_null($exitCode)) {
+            $event->setExitCode($exitCode);
+        }
+
+        if ($exception) {
+            $event->setException($exception);
+        }
+
+        $this->logger->debug(
+            sprintf(
+                "Dispatching event '%s'",
+                $eventName
+            )
+        );
+
+        $this->eventDispatcher->dispatch($eventName, $event);
     }
 }

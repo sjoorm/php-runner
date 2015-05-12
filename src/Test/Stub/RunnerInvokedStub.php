@@ -14,7 +14,7 @@ namespace AndreasWeber\Runner\Test\Stub;
 use AndreasWeber\Runner\Payload\PayloadInterface;
 use AndreasWeber\Runner\Runner;
 
-class InvokedRunnerStub extends Runner
+class RunnerInvokedStub extends Runner
 {
     private $invoked = false;
 

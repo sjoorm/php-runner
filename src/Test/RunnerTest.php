@@ -15,15 +15,13 @@ use AndreasWeber\Runner\Payload\ArrayPayload;
 use AndreasWeber\Runner\Runner;
 use AndreasWeber\Runner\Task\Collection;
 use AndreasWeber\Runner\Task\Retries\Retries;
-use AndreasWeber\Runner\Task\TaskInterface;
-use AndreasWeber\Runner\Test\Stub\InvokedRunnerStub;
+use AndreasWeber\Runner\Test\Stub\RunnerInvokedStub;
 use AndreasWeber\Runner\Test\Task\Stub\ExitCodeOneStub;
 use AndreasWeber\Runner\Test\Task\Stub\FailTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\RetryExceptionTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\RetryMethodTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\SetUpTearDownCalledTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\SkipTaskStub;
-use AndreasWeber\Runner\Test\Task\Stub\UnknownExceptionTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\TaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\UnlessFalseTaskStub;
 use Monolog\Logger;
@@ -50,8 +48,9 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
         $this->runner = new Runner();
         $this->payload = new ArrayPayload();
 
-
-        $this->runner->setLogger(new Logger('testing'));
+        $this->runner->setLogger(
+            new Logger('testing')
+        );
 
 
         $collection = new Collection();
@@ -99,131 +98,6 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
         $this->runner->run($this->payload);
     }
 
-    public function testSuccessCallbackIsInvoked()
-    {
-        $this->runner->setTaskCollection($this->collection);
-
-        $count = 0;
-        $this->runner->onSuccess(
-            function () use (&$count) {
-                $count++;
-            }
-        );
-
-        $this->runner->run($this->payload);
-
-        $this->assertSame(1, $count, 'Callback not invoked');
-    }
-
-    public function testFailureCallbackIsInvoked()
-    {
-        $collection = new Collection();
-        $collection->addTask(new UnknownExceptionTaskStub());
-
-        $this->runner->setTaskCollection($collection);
-
-        $count = 0;
-        $this->runner->onFailure(
-            function () use (&$count) {
-                $count++;
-            }
-        );
-
-        try {
-            $this->runner->run($this->payload);
-        } catch (\Exception $e) {
-            // do nothing
-        }
-
-        $this->assertSame(1, $count, 'Callback not invoked');
-    }
-
-    public function testTaskExecutionCallbackIsInvoked()
-    {
-        $this->runner->setTaskCollection($this->collection);
-
-        $count = 0;
-        $this->runner->onTaskExecution(
-            function () use (&$count) {
-                $count++;
-            }
-        );
-
-        $this->runner->run($this->payload);
-
-        $this->assertSame(1, $count, 'Callback not invoked');
-    }
-
-    public function testTaskSuccessCallbackIsInvoked()
-    {
-        $this->runner->setTaskCollection($this->collection);
-
-        $count = 0;
-        $this->runner->onTaskSuccess(
-            function () use (&$count) {
-                $count++;
-            }
-        );
-
-        $this->runner->run($this->payload);
-
-        $this->assertSame(1, $count, 'Callback not invoked');
-    }
-
-
-    public function testTaskFailureCallbackIsInvokedByUnexpectedException()
-    {
-        $task = new UnknownExceptionTaskStub();
-        $task->setFailOnError(true);
-
-        $collection = new Collection();
-        $collection->addTask($task);
-
-        $this->runner->setTaskCollection($collection);
-
-        $count = 0;
-        $this->runner->onTaskFailure(
-            function () use (&$count) {
-                $count++;
-            }
-        );
-
-        try {
-            $this->runner->run($this->payload);
-        } catch (\Exception $e) {
-            // do nothing
-        }
-
-        $this->assertSame(1, $count, 'Callback not invoked');
-    }
-
-    public function testTaskFailureCallbackIsInvokedByExitCodeNotZeroOrNull()
-    {
-        $task = new ExitCodeOneStub();
-        $task->setFailOnError(true);
-
-        $collection = new Collection();
-        $collection->addTask($task);
-
-        $this->runner->setTaskCollection($collection);
-
-        $count = 0;
-        $this->runner->onTaskFailure(
-            function () use (&$count) {
-                $count++;
-            }
-        );
-
-        try {
-            $this->runner->run($this->payload);
-        } catch (\Exception $e) {
-            // do nothing
-        }
-
-        $this->assertSame(1, $count, 'Callback not invoked');
-    }
-
-
     public function testSetUpIsCalled()
     {
         $task = new SetUpTearDownCalledTaskStub();
@@ -265,7 +139,7 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
 
     public function testRetryATaskByMethodIsSuccessful()
     {
-        $task = new RetryMethodTaskStub();
+        $task = new RetryMethodTaskStub(2);
         $task->setMaxRetries(new Retries(3));
 
         $collection = new Collection();
@@ -297,7 +171,7 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
      */
     public function testExceedingMaxRetriesFailsRun()
     {
-        $task = new RetryMethodTaskStub();
+        $task = new RetryMethodTaskStub(2);
         $task->setMaxRetries(new Retries(1));
 
         $collection = new Collection();
@@ -313,7 +187,7 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
      */
     public function testCantThrowRetryExceptionWhenNoRetriesInstanceIsSet()
     {
-        $task = new RetryMethodTaskStub();
+        $task = new RetryMethodTaskStub(1);
 
         $collection = new Collection();
         $collection->addTask($task);
@@ -399,7 +273,7 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
     public function testDetachingRunner()
     {
         $runner = $this->runner;
-        $attachedRunner = new InvokedRunnerStub();
+        $attachedRunner = new RunnerInvokedStub();
 
         $runner->setTaskCollection($this->collection);
         $runner->attach($attachedRunner);
@@ -414,7 +288,7 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
     {
         $runner = $this->runner;
 
-        $attachedRunner = new InvokedRunnerStub();
+        $attachedRunner = new RunnerInvokedStub();
         $attachedRunner->setTaskCollection(
             new Collection(
                 array(
@@ -435,7 +309,7 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
     {
         $runner = $this->runner;
 
-        $attachedRunner = new InvokedRunnerStub();
+        $attachedRunner = new RunnerInvokedStub();
         $runner->attach($attachedRunner);
 
         $collection = new Collection();
@@ -458,7 +332,7 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
      */
     public function testAttachingAlreadyAttachedRunnerFails()
     {
-        $runner = new InvokedRunnerStub();
+        $runner = new RunnerInvokedStub();
 
         $this->runner->attach($runner);
         $this->runner->attach($runner);
@@ -470,7 +344,7 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
      */
     public function testDetachingNotAttachedRunnerFails()
     {
-        $runner = new InvokedRunnerStub();
+        $runner = new RunnerInvokedStub();
 
         $this->runner->detach($runner);
     }
