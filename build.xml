@@ -47,6 +47,7 @@
         <echo message="|"/>
         <echo message="|   +++ Tools +++"/>
         <echo message="|-- lint                 (Lint all php files)"/>
+        <echo message="|-- phpcbf               (Run PHP Code Beautifier)"/>
         <echo message=""/>
     </target>
 
@@ -294,6 +295,20 @@
             <arg value="cleancode,codesize,controversial,design,naming,unusedcode"/>
             <arg value="--reportfile"/>
             <arg value="${basedir}/build/phpmd/phpmd.xml"/>
+        </exec>
+    </target>
+
+    <!-- ++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- | PHP Code Beautifier                      -->
+    <!-- ++++++++++++++++++++++++++++++++++++++++++ -->
+
+    <!-- run php code beautifier -->
+    <target name="phpcbf">
+        <exec dir="${basedir}" executable="${basedir}/vendor/bin/phpcbf">
+            <arg value="--standard=PSR2"/>
+            <arg value="--extensions=php"/>
+            <arg value="-n"/>
+            <arg path="${basedir}/src"/>
         </exec>
     </target>
 
