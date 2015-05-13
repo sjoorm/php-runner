@@ -21,6 +21,7 @@ use AndreasWeber\Runner\Test\Task\Stub\RetryMethodTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\SkipTaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\TaskStub;
 use AndreasWeber\Runner\Test\Task\Stub\UnknownExceptionTaskStub;
+use AndreasWeber\Runner\Test\Task\Stub\UnlessFalseTaskStub;
 use Monolog\Logger;
 
 class RunnerEventTest extends \PHPUnit_Framework_TestCase
@@ -190,5 +191,19 @@ class RunnerEventTest extends \PHPUnit_Framework_TestCase
         } catch (\Exception $e) {
             // we only want the event to occur
         }
+    }
+
+    public function testTaskUnlessCallbackIsInvoked()
+    {
+        $mock = $this->getMock('AndreasWeber\Runner\Test\Stub\TaskInvokedStub');
+        $mock->expects($this->once())->method('trigger')->willReturn(null);
+
+        $task = new UnlessFalseTaskStub();
+        $collection = new Collection();
+        $collection->addTask($task);
+        $this->runner->setTaskCollection($collection);
+
+        $this->runner->on('runner.task.unless', array($mock, 'trigger'));
+        $this->runner->run($this->payload);
     }
 }

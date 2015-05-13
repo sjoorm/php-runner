@@ -153,6 +153,7 @@ class Runner implements LoggerAwareInterface
 
         try {
             if (!$task->unless()) {
+                $this->dispatch('runner.task.unless', $task, $payload);
                 $this->logTask($task, LogLevel::INFO, 'Skipping because unless() returned boolean false.');
                 return;
             }
