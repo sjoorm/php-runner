@@ -11,11 +11,24 @@ Library to simplify the implementation of sophisticated interdependent tasks.
 - Pass a payload to task runner. Payload gets passed from task to task.
 - Skip single tasks during runtime by implementing unless() method.
 - Use setUp() and tearDown() on each task to prepare and cleanup task execution.
-- Use onSuccess() and onFailure() to attach callbacks on task runner.
-- Use onTaskExecution(), onTaskSuccess() and onTaskFailure() to attach callbacks on single tasks.
 - Call retry() in task to use task runners retry handling.
 - Call skip() in task to skip task processing.
 - Call fail() in task to fail complete task run.
+- Use events to hook in custom logic during task run.
+
+### Events
+
+This library has an internal event system, which you can use to react with custom hooks during execution. The following events are available:
+
+- runner.start
+- runner.success
+- runner.failure
+- runner.task.start
+- runner.task.success
+- runner.task.failure
+- runner.task.retry
+- runner.task.skip
+- runner.task.unless
 
 ## Requirements
 Check shipped composer.json.

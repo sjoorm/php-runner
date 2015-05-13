@@ -354,7 +354,8 @@ class Runner implements LoggerAwareInterface
         PayloadInterface $payload = null,
         $exitCode = null,
         \Exception $exception = null
-    ) {
+    )
+    {
         \Assert\that($eventName)->string()->notEmpty();
 
         $event = new Event();
