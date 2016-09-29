@@ -123,7 +123,7 @@ class Runner implements LoggerAwareInterface
                 $this->dispatch('runner.failure', null, null, null, $e);
                 throw new RunFailedException(
                     'Complete run failed: ' . $e->getMessage(),
-                    $e->getCode(),
+                    (int)$e->getCode(),
                     $e
                 );
             }
